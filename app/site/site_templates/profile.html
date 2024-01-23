@@ -1,0 +1,24 @@
+<section style="background-image: url('/static/images/Background 2.png'); background-size: cover; background-repeat: no-repeat; background-attachment: fixed; height: 100vh; filter: brightness(80%);">
+    {% extends 'base.html' %}
+    {% block content %}
+        <main class="container count-box">
+            <div class="row top-part">
+                <div><h1 class="profile">Profile Details</h1></div>
+                <div class="">
+                    <h1 class="col text-center user">{{ current_user.email}}'s Profile</h1>
+                </div>
+            </div>
+            <div class="shift">
+                <div class="profile-box d-flex justify-content-center align-items-center"> <!-- Center the content -->
+                    <aside class="col-12 col-md-6">
+                        <ul class="list-group">
+                            <li class="list-group-item item-email">Email: {{ current_user.email }}</li>
+                            <li class="list-group-item item-token" style="word-wrap: break-word;">Token: {{ current_user.token }} </li> 
+                        </ul>
+                    </aside>
+                </div>
+            </div>
+        </main>
+    </section>
+{% endblock %}
+

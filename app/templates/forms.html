@@ -1,0 +1,25 @@
+<!-- When a user fills out this form and submits it, the entered data (email and password) will be sent to the server using the HTTP POST or submit method. -->
+<!-- This form template is a part of a Flask application, and on the server side, you would typically have corresponding route handling logic to process the form data. -->
+
+
+<form method="POST"> 
+    {{ form.hidden_tag() }}  <!-- for security and CSRF protection -->
+    
+    <div class="form-group mb-3"> <!-- Add margin-bottom to the container of email field -->
+        <fieldset id="email-field">
+            {{ form.email.label }}
+            {{ form.email(class='form-control', placeholder='Place email here') }}
+        </fieldset>
+    </div>
+
+    <div class="form-group mb-3"> <!-- Add margin-bottom to the container of password field -->
+        <fieldset id="pass-field">
+            {{ form.password.label }}
+            {{ form.password(class="form-control", placeholder="Place password here") }}
+        </fieldset>
+    </div>
+
+    <!-- Submit button area -->
+    <div class="shift">{{ form.submit_button(class="btn btn-primary btn-block sub_button", label="Submit") }}</div>
+</form>
+
