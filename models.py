@@ -20,22 +20,15 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.String, primary_key=True)
-    first_name = db.Column(db.String(150), nullable=True, default='')
-    last_name = db.Column(db.String(150), nullable=True, default='')
     email = db.Column(db.String(150), nullable=False)
-    password = db.Column(db.String, nullable=True, default='')
-    g_auth_verify = db.Column(db.Boolean, default=False)
-    token = db.Column(db.String, default='', unique= True)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    password = db.Column(db.String(255), nullable=True, default='')
+    token = db.Column(db.String, default='', unique= True)  # make sure u include A foreign key next time
 
-    def __init__(self, email, first_name='', last_name='', password='', g_auth_verify=False):
+    def __init__(self, email, password='', g_auth_verify=False):
         self.id = self.set_id()
-        self.first_name = first_name
-        self.last_name = last_name
         self.password = self.set_password(password)
         self.email = email
         self.token = self.set_token(24)
-        self.g_auth_verify = g_auth_verify   #if user opts to for google authenicator verification
     
     def set_token(self, length):
         return (secrets.token_hex(length))
@@ -50,45 +43,99 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'User {self.email} has been added to the database.'
     
-
-class Car(db.Model):
-    car_id = db.Column(db.String, primary_key=True)
-    car_vin = db.Column(db.String(17))
-    car_make = db.Column(db.String(150), nullable=False)
-    car_model = db.Column(db.String(150))
-    car_year = db.Column(db.String(4))   # should be integer for future ref.
-    car_color = db.Column(db.String(25))
+class Profile(db.Model):
+    profile_id = db.Column(db.String, primary_key=True)
+    full_name = db.Column(db.String(50))
+    phone_number = db.Column(db.String(30), nullable=False)  
+    email_address = db.Column(db.String(70))
+    username = db.Column(db.String(30))   # should be integer for future ref.
+    bio = db.Column(db.String(500))
     user_token = db.Column(db.String, db.ForeignKey('user.token'), nullable=False)
 
-    def __init__(self, car_make, car_model, car_year, car_color, car_vin, user_token, car_id= ''):
-        self.car_id = self.set_id()
-        self.car_make = car_make
-        self.car_model = car_model
-        self.car_year = car_year
-        self.car_color = car_color 
-        self.car_vin = car_vin
+    def __init__(self, full_name, phone_number, email_address, username, bio, user_token, profile_id= ''):
+        self.profile_id = self.set_id()
+        self.full_name = full_name
+        self.phone_number = phone_number
+        self.email_address = email_address
+        self.username = username
+        self.bio = bio
         self.user_token = user_token
 
     def __repr__(self):
-        return f'The following car has been added to the application.'
+        return f'The following profile has been added to the application.'
     
     def set_id(self):
         return (secrets.token_urlsafe())
     
+    
+    
+    
         
-class CarSchema(ma.Schema):
+class ProfileSchema(ma.Schema):
     class Meta:
-        fields = ['car_id', 'car_make', 'car_model', 'car_year', 'car_color', 'car_vin']
+        fields = ['profile_id', 'full_name', 'phone_number', 'email_address', 'username', 'bio',]
+
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ['id', 'first_name', 'last_name', 'password', 'email' ]   #this info makes info from class serialized and  puts in json format and displays to user
+        fields = ['id',  'password', 'email', 'token' ]   #this info makes info from class serialized and  puts in json format and displays to user
         
-car_schema = CarSchema()
-cars_schema = CarSchema(many=True)
+
 
 user_schema = UserSchema()
+profile_schema = ProfileSchema()
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# car_schema = CarSchema()
+# cars_schema = CarSchema(many=True) // More than one
+
+# class Dating(db.Model):
+#     profile_id = db.Column(db.String, primary_key=True)
+#     image_url = db.Column(db.String(500))
+#     profile_info = db.Column(db.String(150), nullable=False)  #the t
+#     phone_number = db.Column(db.String(150))
+#     email_address = db.Column(db.String(4))   # should be integer for future ref.
+#     username = db.Column(db.String(25))
+#     user_id = db.Column(db.String, db.ForeignKey('user.id'), nullable=False)
+
+#     def __init__(self, full_name, phone_number, email_address, username, bio, user_token, car_id= ''):
+#         self.car_id = self.set_id() #next time use plain ID not car_id..will cause errors in react MUI tables
+#         self.full_name = full_name
+#         self.phone_number = phone_number
+#         self.email_address = email_address
+#         self.username = username 
+#         self.bio = bio
+#         self.user_token = user_token
+
+#     def __repr__(self):
+#         return f'The following car has been added to the application.'
+    
+#     def set_id(self):
+#         return (secrets.token_urlsafe())
+    
+        
+# class CarSchema(ma.Schema):
+#     class Meta:
+#         fields = ['car_id', 'full_name', 'phone_number', 'email_address', 'username', 'bio']
