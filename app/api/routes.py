@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from helpers import token_required
 from models import db, User, Profile, user_schema, profile_schema
+from werkzeug.security import generate_password_hash, check_password_hash
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -18,6 +19,32 @@ def create_user():    #reference in models
 
     response = user_schema.dump(new_user)
     return jsonify(response)
+
+# login to account
+@api.route('/login', methods=['POST'])
+def loginUser():
+    email = request.json.get("email",None)
+    password = request.json.get("password",None)
+    print(email, password)
+    try:
+        user = User.query.filter_by(email= email).first()
+        print(user)
+        token = user.token
+    except AttributeError:
+        return jsonify({"error":"Wrong email or password"}), 401
+
+    
+    if not check_password_hash(user.password, password):  #if password incorrect
+        return jsonify({"error":"Wrong password"}), 401
+    
+    return jsonify({
+        "access_token" : token,
+        "email": email, 
+        "passwordHash": password
+        ,
+}),201
+
+
 
 
 # create profile info
