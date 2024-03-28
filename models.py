@@ -41,7 +41,7 @@ class User(db.Model, UserMixin):
         return self.pw_hash
     
     def __repr__(self):
-        return f'User {self.email} has been added to the database.'
+        return f'User(id={self.id}'
     
 class Profile(db.Model):
     profile_id = db.Column(db.String, primary_key=True)
@@ -53,7 +53,7 @@ class Profile(db.Model):
     user_token = db.Column(db.String, db.ForeignKey('user.token'), nullable=False)
 
     def __init__(self, full_name, phone_number, email_address, username, bio, user_token, profile_id= ''):
-        self.profile_id = self.set_id()
+        self.profile_id = profile_id if profile_id else self.set_id()
         self.full_name = full_name
         self.phone_number = phone_number
         self.email_address = email_address
@@ -62,7 +62,8 @@ class Profile(db.Model):
         self.user_token = user_token
 
     def __repr__(self):
-        return f'The following profile has been added to the application.'
+        return f'Profile(profile_id={self.profile_id}, full_name={self.full_name}, phone_number={self.phone_number}, email_address={self.email_address}, username={self.username}, bio={self.bio}, user_token={self.user_token})'
+
     
     def set_id(self):
         return (secrets.token_urlsafe())

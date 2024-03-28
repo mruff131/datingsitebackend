@@ -86,6 +86,64 @@ def update_account (current_user_token, id):
     response = profile_schema.dump(user)
     return jsonify(response)
 
+
+@api.route('/settings-profile', methods=['POST', 'PUT'])
+@token_required
+def update_or_create_account(current_user_token):
+    try:
+        # Check if the user already has a profile
+        user_profile = Profile.query.filter_by(user_token = current_user_token.token).first() 
+        print(f'user_profile is {user_profile}')
+        
+     
+        
+        if user_profile is not None:
+            # Update existing profile
+            profile_id = user_profile.profile_id
+            print(profile_id)
+            print("profile id is not none")
+            user = Profile.query.get(profile_id)
+            user.full_name = request.json['full_name']
+            user.phone_number = request.json['phone_number']
+            user.email_address = request.json['email_address']
+            user.username = request.json['username']
+            user.bio = request.json['bio']
+
+            db.session.commit()
+            response = profile_schema.dump(user)
+            return jsonify(response)
+        else:
+            #create_profile
+            full_name = request.json.get('full_name')
+            phone_number = request.json.get('phone_number')
+            email_address = request.json.get('email_address')
+            username = request.json.get('username')
+            bio = request.json.get('bio')
+            the_token = current_user_token.token
+
+
+            print(f'TESTER:  {the_token}')
+            print(f'TESTER2:  {current_user_token.token}')
+            print(full_name, phone_number, email_address,username, bio, the_token)
+
+            new_profile = Profile(full_name, phone_number, email_address,username, bio, user_token = the_token )
+            db.session.add(new_profile)
+            db.session.commit()
+
+            response = profile_schema.dump(new_profile)
+            return jsonify(response)
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500  # Internal server error
+
+
+
+
+
+
+
+
+
 # Get user profile info using PROFILE Id
 @api.route('/settings/<id>', methods=['GET'])
 @token_required
@@ -99,36 +157,82 @@ def get_user(current_user_token, id):
         return jsonify({'message': 'User profile not found'}), 404
 
 
+
+
 # Delete account and profile 
-@api.route('/settings/<id>', methods=['DELETE'])  
+@api.route('/settings', methods=['DELETE'])  
 # @api.route('/settings', methods=['DELETE'])  # For profiles without ID
 @token_required
-def delete_account(current_user_token, id):
-     #TODO HANDLE IF USER DOES NOT HAVE PROFILE
-    token = current_user_token.token
-    print(token)
+def delete_account(current_user_token):
 
-    user = User.query.filter_by(token=token).first()
-    print(user)
-    profile = Profile.query.get(id)  # can only use .get to grab primary key
-    # profile = Profile.query.filter_by(user_token=user.token).first()
+    try:
+        # Check if the user has a profile
+        try:
+            user_profile = Profile.query.filter_by(user_token = current_user_token.token).first() 
+            print(f'user_profile is {user_profile}')
 
-    if profile:
-        db.session.delete(profile)
-    db.session.delete(user)
-    db.session.commit()
-    response = profile_schema.dump(profile)
-    return jsonify(response)
+            profile_id = user_profile.profile_id # must delete using primary key
+            profile = Profile.query.get(profile_id)
+            db.session.delete(profile)
+            profile_data = profile_schema.dump(profile)
+        except:
+            profile_data = None
+        
+        
+        if current_user_token is not None:
+            user_info = User.query.filter_by(token=current_user_token.token).first()
+            user_id = user_info.id
+            user = User.query.get(user_id)
+
+            db.session.delete(user)
+            db.session.commit()
+        
+            user_data = user_schema.dump(user)
+        else:
+            user_data = "check ur token"
+        
+        return jsonify({'message': 'Account and profile deleted successfully', 
+                        'profile': profile_data, 
+                        'user': user_data}), 200
+    except Exception as e:
+            return jsonify({'message': str(e)}), 500  # Internal server error
+
+
+
+
+
+
+
+# # Delete account and profile 
+# @api.route('/settings', methods=['DELETE'])  
+# # @api.route('/settings', methods=['DELETE'])  # For profiles without ID
+# @token_required
+# def delete_account(current_user_token, id):
+#      #TODO HANDLE IF USER DOES NOT HAVE PROFILE
+#     token = current_user_token.token
+#     print(token)
+
+#     user = User.query.filter_by(token=token).first()
+#     print(user)
+#     profile = Profile.query.get(id)  # can only use .get to grab primary key
+#     # profile = Profile.query.filter_by(user_token=user.token).first()
+
+#     if profile:
+#         db.session.delete(profile)
+#     db.session.delete(user)
+#     db.session.commit()
+#     response = profile_schema.dump(profile)
+#     return jsonify(response)
  
 
- # Delete Account only (when theres no profile ID)
-@api.route('/account/<id>', methods = ['DELETE'])
-@token_required
-def delete_account_only(current_user_token, id):
-    user = User.query.get(id)
-    db.session.delete(user)
-    db.session.commit()
-    response = profile_schema.dump(user)
+#  # Delete Account only (when theres no profile ID)
+# @api.route('/account/<id>', methods = ['DELETE'])
+# @token_required
+# def delete_account_only(current_user_token, id):
+#     user = User.query.get(id)
+#     db.session.delete(user)
+#     db.session.commit()
+#     response = profile_schema.dump(user)
 
-    return jsonify(response)
+#     return jsonify(response)
 
